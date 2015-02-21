@@ -1,0 +1,284 @@
+#!/bin/bash
+#guser (Gestao de Usuarios)
+#Por: Igor SBrandao
+#email: igorsca(at)gmail.com
+#
+#	Atrelado ao Pograma admenu para Gestao de Usuarios no Sistema
+#	
+#	O guser na verdade e um dos modulos do admenu.
+#	O guser e um menu para automaticazao de tarefas de gestao de usuarios em 
+#	sistema Unix Like.	
+#	Ele possui duas variaveis globais "denyus" e "denygp" 
+#	Adcione a essas variaveis o usuario ou grupo que nao podera ser removido pelo guser.
+#	Ex:
+#	Para nao permitir que um usuario seja removido adcione seu nome na variavel "denyus"
+#	Para impedir que um grupo seja removido adcione o nome do grupo na variavel "denygp"
+#
+###---Sessao Global----###
+SUD=sudo
+BPTH="/usr/local/bin/"
+denyus="root bin daemon adm lp sync shutdown halt mail news uucp operator games ftp smmsp mysql rpc sshd gdm pop nobody openvpn squid slot menu"
+denygp="root bin daemon sys adm tty disk lp mem kmem wheel floppy mail news uucp man audio video cdrom games slocate utmp smmsp mysql rpc sshd gdm shadow ftp pop scanner nobody nogroup users console openvpn squid" 
+###---Fim da Sessao Global---###
+#Colors
+yblu="\033[33;44m"
+limpa="\033[0m"
+#
+#Funcoes
+timout ()
+{
+echo -e "\n\033[1;34mO tempo expirou!!!\033[0m"
+}
+#
+while true
+do
+clear
+tput bold
+echo -ne "				GESTÃO DE USUARIOS
+				------------------
+			"$yblu"Opção           Descrição                         
+			=====           =========                         
+			(1)             Criar Usuario.                    
+			(2)             Remover Usuario.                  
+			(3)             Alterar Senha.                    
+			(4)             Listar Usuarios.                  
+			(5)             Criar Grupo.                      
+			(6)             Remover Grupo.                    
+			(7)             Adcionar/Remover Usuario no Grupo.
+			(x)             Voltar ao Menu Principal.         "$limpa"
+
+"
+
+echo -ne "				Escolha uma Opção: { }\033[2D"
+read -n 1 opcao
+echo -e "\n"
+case "$opcao"
+in
+#######################################
+#Adcionar Usuarios.
+#######################################
+1)
+read -t 10 -p "Entre com o Nome do Usuário: " user||timout
+read -t 10 -p "Entre com um Shell para "$user": " shell|| timout
+grupo=`cat /etc/passwd|grep "$user"|cut -d':' -f4`
+
+if [ ! "$user" ]
+then
+	echo -e "\033[31;40m Ops... Um nome deve ser inserido para o Usuario ser Criado\033[0m"	
+	sleep 2
+else
+	if fgrep "$user" /etc/passwd 2>/dev/null 1>/dev/null
+	then
+		echo -e "\033[31;40mOps... "$user" ja foi criado!\033[0m"
+		sleep 2
+		continue
+	fi
+
+	if [ ! "$shell" ]
+	then
+		"$SUD" useradd -s "/bin/false" "$user"
+		"$SUD" mkdir /home/"$user"
+		"$SUD" chown "$user"."$grupo" /home/"$user"
+		"$SUD" echo "Entre com a senha para "$user":"
+		"$SUD" passwd "$user"
+		echo -e "\033[32;40m"$user" foi criado com sucesso!\033[0m"
+		sleep 2
+	
+	else
+		"$SUD" useradd -s "$shell" "$user"
+		"$SUD" mkdir /home/"$user"
+		"$SUD" chown "$user"."$grupo" /home/"$user"
+		"$SUD" echo "Entre com a senha para "$user":"
+		"$SUD" passwd "$user"
+		echo -e "\033[32;40m"$user" foi criado com sucesso!\033[0m"
+		sleep 2
+			
+	fi
+fi
+;;
+########################################
+#Remover Usuarios.
+########################################
+2)
+read -t 10 -p "Entre com o nome do usuario a ser removido: " duser||timout
+
+if [ ! "$duser" ]
+then
+        echo -e "\033[32;40mVc precisa entra com o nome do usuario!\033[0m"
+        sleep 2
+else
+
+	if grep "$duser" /etc/passwd 2>/dev/null 1>/dev/null
+	then
+	 		for deny in $denyus
+			do
+				"$SUD" echo "$deny" >> /tmp/denyus
+			done
+
+			if fgrep "$duser" /tmp/denyus 2>/dev/null 1>/dev/null
+			then
+				echo -e "\033[32;40m$duser e um usuario importante para o sistema..."
+				echo -e "\033[31;40mNao posso deletar "$duser"\033[0m"
+				sleep 3
+				"$SUD" rm -rf /tmp/denyus
+			else
+				read -t 10 -p "Tem certeza que deseja deletar "$duser"? (s|N): " ask1||timout
+				if [[ "$ask1" == s || "$ask1" == S ]]
+				then
+					echo -e "\033[31;40mApagando "$duser"\033[0m" 
+					"$SUD" userdel -r "$duser" 2>/dev/null 1>/dev/null
+					sleep 2
+					"$SUD" rm -rf /tmp/denyus
+				fi
+			fi 	
+				
+	else
+		echo Ops... "$duser" nao existe!
+		sleep 2
+	fi
+fi
+;;
+########################################
+#Alterar Senha.
+########################################
+3)
+read -t 10 -p "Qual usuario vc deseja alterar a senha ? " altpass||timout
+if [ ! "$altpass" ]
+then
+	echo -e "\033[31;40mVc deve entrar com o nome de um usuario.\033[0m"
+	sleep 2
+else	
+	"$SUD" passwd "$altpass"
+	sleep 2
+fi
+;;
+########################################
+#Listar Usuarios.
+########################################
+4)
+cat /etc/passwd|cut -d':' -f1 >> /tmp/tuser
+"$BPTH"ltn /tmp/tuser
+"$SUD" rm -rf /tmp/tuser
+;;
+########################################
+#Criar Grupo.
+########################################
+5)
+read -t 10 -p "Entre com o Nome do Grupo: " group||timout
+
+if [ ! "$group" ]
+then
+	echo -e "\033[31;40m Ops... Um nome deve ser inserido para o Grupo ser Criado\033[0m"	
+	sleep 2
+else
+	if fgrep "$group" /etc/group 2>/dev/null 1>/dev/null
+	then
+		echo -e "\033[31;40mOps... "$group" ja foi criado!\033[0m"
+		sleep 2
+		continue
+	else
+		"$SUD" groupadd "$group"
+		echo -e "\033[32;40m"$group" Criado com Sucesso!\033[0m"
+		sleep 2
+	fi
+fi
+;;
+##########################################
+#Remover Grupos
+##########################################
+6)
+read -t 10 -p "Entre com o nome do Grupo a ser removido: " droup||timout
+
+if [ ! "$droup" ]
+then
+        echo -e "\033[32;40mVc precisa entra com o nome do Grupo!\033[0m"
+        sleep 2
+else
+
+	if fgrep "$droup" /etc/group 2>/dev/null 1>/dev/null
+	then
+	 		for deny in $denygp
+			do
+				"$SUD" echo "$deny" >> /tmp/denygp
+			done
+
+			if fgrep "$droup" /tmp/denygp 2>/dev/null 1>/dev/null
+			then
+				echo -e "\033[32;40m$droup e um Grupo importante para o sistema..."
+				echo -e "\033[31;40mNao posso deletar "$droup"\033[0m"
+				sleep 3
+				"$SUD" rm -rf /tmp/denygp
+			else
+				read -t 10 -p "Tem certeza que deseja deletar "$droup"? (s|N): " ask1||timout
+				if [[ "$ask1" == s || "$ask1" == S ]]
+				then
+					echo -e "\033[31;40mApagando "$droup"\033[0m" 
+					"$SUD" groupdel "$droup" 2>/dev/null 1>/dev/null
+					sleep 2
+					"$SUD" rm -rf /tmp/denygp
+				fi
+			fi 	
+				
+	else
+		echo Ops... "$droup" nao existe!
+		sleep 2
+	fi
+fi
+;;
+#######################################
+#Adcionar ou Remover Usuario ao Grupo.
+#######################################
+7)
+read -t 10 -p "Vc deseja Adcionar ou Remover o usuario do grupo? (A|r): " ask2||timout
+if [[ "$ask2" == R || "$ask2" == r ]]
+then
+	read -t 10 -p "Entre com o grupo: " group||timout
+	read -t 10 -p "Entre com o usuario: " user||timout
+	if [ ! "$group" ]
+	then
+		echo -e "\033[31;40mVc deve entrar com um grupo e um usuario.\033[0m"
+		sleep 2
+		continue
+	elif [ ! "$user" ]
+	then
+		echo -e "\033[31;40mVc deve entrar com um grupo e um usuario.\033[0m"
+		sleep 2
+		continue
+	fi
+	"$SUD" gpasswd -d "$user" "$group"
+	sleep 2
+else
+	read -t 10 -p "Entre com o grupo: " group||timout
+	read -t 10 -p "Entre com o usuario: " user||timout
+	if [ ! "$group" ]
+	then
+		echo -e "\033[31;40mVc deve entrar com um grupo e um usuario.\033[0m"
+		sleep 2
+		continue
+	elif [ ! "$user" ]
+	then
+		echo -e "\033[31;40mVc deve entrar com um grupo e um usuario.\033[0m"
+		sleep 2
+		continue
+	fi
+	"$SUD" gpasswd -a "$user" "$group"
+	sleep 2
+fi
+;;
+#######################################
+#Sair.
+#######################################
+x|X)
+break
+;;
+#######################################
+#Resto
+######################################
+*)
+echo -e "\033[31;40mOps... Só uma das opcoes acima podem ser usadas...\033[0m"
+sleep 2
+;;
+esac
+done
+clear
+exit

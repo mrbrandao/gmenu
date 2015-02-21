@@ -1,0 +1,87 @@
+#!/bin/bash
+#
+#
+#	Menu de Para Automatizar o Uso do Sistema.
+#
+#
+#colors
+BPTH="./"
+yblue="\033[33;44m"
+limpa="\033[0m"
+while true
+do
+clear
+tput bold
+echo -ne "				MENU DE CONFIGURAÇÃO DO SISTEMA
+				------------------------------
+			"$yblue"Opção           Descrição                   
+			=====           =========                   
+			(1)             Gestao de Usuarios.         
+			(2)             Gestao do Proxy.            
+			(3)             Gestao de Firewall.         
+			(4)             Gestao do Controle de Banda.
+			(5)             Gestao da Rede.             
+			(6)             Gestao de Backup.           
+			(7)             Gestao de Sistema.          
+			(v)             Notas do Autor.             
+			(x)             Sair do Gestor Admenu.      "$limpa"
+
+"
+
+echo -ne "			Escolha uma Opção: [ ]\033[2D"
+read -n 1 opcao
+echo -e "\n"
+case "$opcao"
+in
+
+##########################################
+1)
+"$BPTH"guser
+;;
+2)
+"$BPTH"gproxy
+;;
+3)
+echo "Este Modulo e adcional e pode ser comprado!"
+sleep 2
+#"$BPTH"gfir
+;;
+4)
+echo "Este Modulo e adcional e pode ser comprado!"
+sleep 2
+#"$BPTH"gban
+;;
+5)
+echo "Este Modulo e adcional e pode ser comprado!"
+sleep 2
+#"$BPTH"glan
+;;
+6)
+echo "Este Modulo e adcional e pode ser comprado!"
+sleep 2
+#"$BPTH"gbkp
+;;
+7)
+echo "Este Modulo e adcional e pode ser comprado!"
+sleep 2
+#"$BPTH"gsys
+;;
+v|V)
+clear
+"$BPTH"gisb
+tput bold
+read -p "
+			Pressione ENTER para Continuar...
+"
+;;
+x|X)
+break
+;;
+*)
+echo -e "\033[32;40mOps... So uma das opcoes acima podem ser usadas...\033[0m"
+sleep 2
+;;
+##########################################
+esac
+done
+exit

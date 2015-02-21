@@ -1,0 +1,55 @@
+#!/bin/bash
+#
+#
+#		Programa para listar os arquivos
+#
+#
+Contalinha=0
+clear
+tput bold
+echo "	 		   LISTANDO		$1"
+tput sgr0
+cat "$1"|
+while read Line
+do
+	
+	if [ $Contalinha -ge 20 ]
+	then
+		tput rev
+		tput cup 23 22
+		echo "Tecle <ENTER> para continuar ou X para sair"
+		tput sgr0
+		read sair < /dev/tty
+		for timer in "->" "-->"  
+		do
+		tput cup 24 30
+		tput dch 24 30
+		echo -e "\033[1;36;45m$timer\033[0m"
+		sleep 0
+		done
+		if [ "$sair" = x -o "(" "$sair" = X ")" ]
+		then
+			
+			echo "Saindo..."
+			sleep 1
+			clear
+			exit
+		fi
+		clear
+		tput bold
+		echo "			   LISTANDO			  $1"
+		tput sgr0
+		Contalinha=0
+	fi
+		echo "			$Line"
+		Contalinha=`expr $Contalinha + 1`
+done
+tput cup 23 35
+echo -e "\033[1;32;40mFim da Lista\033[0m"
+tput rev
+tput cup 24 30
+echo "Tecle <ENTER> para sair"
+tput sgr0
+read
+clear
+exit

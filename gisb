@@ -1,0 +1,59 @@
+#!/bin/bash
+#Autor: IgorSBrandao
+#e-mail: igorsca(at)gmail.com
+#
+#	Atrelado ao Gmenu Admenu... Para Nota de e Versao.
+#
+#
+#
+VERSAO=0.8
+#colors
+red="\033[31;40m"
+lred="\033[1;31;40m"
+blue="\033[34;40m"
+lblue="\033[1;34;40m"
+gren="\033[32;40m"
+lgren="\033[1;32;40m"
+yellow="\033[33;40m"
+lyellow="\033[1;33;40m"
+pink="\033[35;40m"
+lpink="\033[1;35;40m"
+grey="\033[36;40m"
+lgrey="\033[1;36;40m"
+limpa="\033[0m"
+echo -e ""$lblue"Nome: gmenu (Gestor Menu)."$limpa""$lgren" Versão "$VERSAO""$limpa"" 
+echo -e ""$grey"--------------------------------------------------------------------------------
+| - O \"gmenu\" foi deselvolvido para automatizar as tarefas de Administração    |
+|   dos sistema \"x\" Unix Like.                                                 |
+| - Nesta versão o gemu ainda esta em sua versão modo texto... Logo estará     |
+|   disponivel uma versão mais completa e já com um front-end web desenvolvido |
+|   sob as linguagens PHP,CGI,SHELL,C e ASP. Com isso ele poderá ser acessado  |
+|   via browser, funcionando de forma parecida a configuração de um modem      |
+|   ADSL ou outras plataformas embarcadas semelhantes...                       |
+| - O gemu ja é um aspirante do projeto GNU e logo estará disponivel sob       |
+|   os termos da GPL.                                                          |
+|   O gmenu pode ser Distribuído livremente, e seus diversos módulos podem     |
+|   ser comprados.Um módulo adquirido um única vez pode ser                    |
+|   modificado e distribuído livremente, desde que mantenha os termos da GPL   |
+|   como manter os autores anteriores e especifique claramente as mudancas     |
+|   nos Patch's ou Script's modificados.                                       |
+| - Infelizmente ainda nao foi desenvolvida uma ferramenta de autoinstalacao   |
+|   ou pacote para a atualização ou instalação do gmenu. E por essa condição   |
+|   a instalação e configuração do gmenu ainda e manual e necessita de         |
+|   conhecimentos avançados da administração de Sistemas GNU/Linux.            |
+|   Em contra proposta uma vez instalado e bem configurado o gmenu nao terá    |
+|   mais onerações e cumpre seu objetivo com louvor.                           |
+|   O Pacote do gmenu já está em andamento.                                    |
+--------------------------------------------------------------------------------"
+echo -e ""$lgren"Módulos e suas funções:"$limpa"                    
+"$lgren"*"$limpa" "$lred"guser"$limpa""$blue"  Gestão de Usuários. "$limpa""$lgren">>>"$limpa""$lpink" Gerencie Usuários e Grupos com Facilidade."$limpa"
+"$lgren"*"$limpa" "$lred"gproxy"$limpa""$blue" Gestão do Proxy.    "$limpa""$lgren">>>"$limpa""$lpink" Libere ou Bloqueie acessos a sites,chats ou radios em sua rede."$limpa"
+"$lgren"*"$limpa" "$lred"gfir"$limpa""$blue"   Gestão do Firewall. "$limpa""$lgren">>>"$limpa""$lpink" Aumente a seguraça da sua rede, implementando regras avançadas e específicas."$limpa"
+"$lgren"*"$limpa" "$lred"gbkp"$limpa""$blue"   Gestão de Backup.   "$limpa""$lgren">>>"$limpa""$lpink" Crie rotinas de Backup em CD's/DvD's ou Fitas."$limpa"
+"$lgren"*"$limpa" "$lred"gban"$limpa""$blue"   Gestão de Controle de Banda. "$limpa""$lgren">>>"$limpa""$lpink" Divida seu Link de Internet designando limite de download e upload para Ip's ou Redes"$limpa"
+"$lgren"*"$limpa" "$lred"glan"$limpa""$blue"   Gestão de Rede.     "$limpa""$lgren">>>"$limpa""$lpink" Compartilhe, Gerencie ou Monitore o Trafego de sua Rede."$limpa"
+"$lgren"*"$limpa" "$lred"gsys"$limpa""$blue"   Gestão do Sistema.  "$limpa""$lgren">>>"$limpa""$lpink" Crie Cotas de Disco, Implemente LVM e RAID em Seu Servidor."$limpa"
+"
+echo -e ""$lblue"Autor:"$limpa""$lgren" isca
+"$lred"email:"$blue" igorsca(at)gmail.com
+"$limpa""
