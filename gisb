@@ -27,20 +27,20 @@ echo -e ""$grey"----------------------------------------------------------------
 |   dos sistema \"x\" Unix Like.                                                 |
 | - Nesta versão o gemu ainda esta em sua versão modo texto... Logo estará     |
 |   disponivel uma versão mais completa e já com um front-end web desenvolvido |
-|   sob as linguagens PHP,CGI,SHELL,C e ASP. Com isso ele poderá ser acessado  |
+|   sob as linguagens PHP,CGI,SHELL,C e AJAX.Com isso ele poderá ser acessado  |
 |   via browser, funcionando de forma parecida a configuração de um modem      |
 |   ADSL ou outras plataformas embarcadas semelhantes...                       |
-| - O gemu ja é um aspirante do projeto GNU e logo estará disponivel sob       |
-|   os termos da GPL.                                                          |
+| - O gemu ja é um projeto aspirante BSD e logo estará disponivel sob          |
+|   os termos da BSD.                                                          |
 |   O gmenu pode ser Distribuído livremente, e seus diversos módulos podem     |
 |   ser comprados.Um módulo adquirido um única vez pode ser                    |
-|   modificado e distribuído livremente, desde que mantenha os termos da GPL   |
+|   modificado e distribuído livremente, dentro dos termos BSD License         |
 |   como manter os autores anteriores e especifique claramente as mudancas     |
 |   nos Patch's ou Script's modificados.                                       |
 | - Infelizmente ainda nao foi desenvolvida uma ferramenta de autoinstalacao   |
 |   ou pacote para a atualização ou instalação do gmenu. E por essa condição   |
 |   a instalação e configuração do gmenu ainda e manual e necessita de         |
-|   conhecimentos avançados da administração de Sistemas GNU/Linux.            |
+|   conhecimentos avançados da administração de Sistemas Linux/Unix'es.        |
 |   Em contra proposta uma vez instalado e bem configurado o gmenu nao terá    |
 |   mais onerações e cumpre seu objetivo com louvor.                           |
 |   O Pacote do gmenu já está em andamento.                                    |
