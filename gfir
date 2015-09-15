@@ -1,490 +1,260 @@
 #!/bin/bash
 #By: isca0 igorsca(at)gmail.com
-#22/06/15 - Ctba/PR
+#14/09/15 - Ctba/PR
 #
 #	Atrelado ao Pograma admenu para Gestao do Firewall (iptables)
 #
 #
 #
 #####---Variaveis Globais---#####
-SUD=sudo
-UPX=squid
-BPTH="./"
-#####---Fim das Var. Globais---#####
+
 #Colors
-yblu="\033[33;44m"
+green="\033[32;40;1m"
+red="\033[31;40;1m"
+yellow="\033[33;40;1m"
 limpa="\033[0m"
-sudo chmod 666 "$PTXCONF"*
-while true
+
+#Global var's
+SOURCE="/usr/local/bin"
+#FIR=$(/etc/rc.d/rc.fir)
+
+#Functions
+cad_word(){
+if [ -e "$SOURCE"/libs/blacklist ]
+then
+	if fgrep "$word" "$SOURCE"/libs/blacklist > /dev/null
+	then
+		echo -e "$red""A palavra "$yellow""$word""$red" ja esta cadastrada!"
+	else
+		echo "$word" >> "$SOURCE"/libs/blacklist
+		echo -e "$green""$word""$limpa"" cadastrada com sucesso!"
+		#iptables -A INPUT -m string --algo bm --string "$word" -j DROP
+		#iptables -A FORWARD -m string --algo bm --string "$word" -j DROP
+	fi
+else
+		echo "$word" >> "$SOURCE"/libs/blacklist
+		echo -e "$green""$word""$limpa"" cadastrada com sucesso!"
+		#iptables -A INPUT -m string --algo bm --string "$word" -j DROP
+		#iptables -A FORWARD -m string --algo bm --string "$word" -j DROP
+fi
+	
+}
+
+del_word(){
+if [ -e "$SOURCE"/libs/blacklist ]
+then
+	if fgrep "$word" "$SOURCE"/libs/blacklist > /dev/null
+	then
+		fgrep -v "$word" "$SOURCE"/libs/blacklist > /tmp/words
+		mv -f /tmp/words "$SOURCE"/libs/blacklist
+		echo -e "$green""$word""$limpa"" removida com sucesso!"
+		#iptables -D INPUT -m string --algo bm --string "$word" -j DROP
+		#iptables -D FORWARD -m string --algo bm --string "$word" -j DROP
+	else
+		echo -e "$red""A palavra "$yellow""$word""$red" ainda nao esta cadastrada"
+	fi
+else
+	echo -e "$yellow""Nao existem palavras a serem removidas!""$limpa"
+	sleep 1
+	
+fi
+	
+}
+
+cad_ip(){
+if [ -e "$SOURCE"/libs/allow ]
+then
+	if fgrep "$ip" "$SOURCE"/libs/allow > /dev/null
+	then
+		echo -e "$red""O endereco ip "$yellow""$ip""$red" ja esta cadastrado!"
+	else
+		echo "$ip" >> "$SOURCE"/libs/allow
+		echo -e "$green""$ip""$limpa"" cadastrado com sucesso!"
+	fi
+else
+		echo "$ip" >> "$SOURCE"/libs/allow
+		echo -e "$green""$ip""$limpa"" cadastrado com sucesso!"
+fi
+	
+}
+
+del_ip(){
+if [ -e "$SOURCE"/libs/allow ]
+then
+	if fgrep "$ip" "$SOURCE"/libs/allow > /dev/null
+	then
+		fgrep -v "$ip" "$SOURCE"/libs/allow > /tmp/ips
+		mv -f /tmp/ips "$SOURCE"/libs/allow
+		echo -e "$green""$ip""$limpa"" removido com sucesso!"
+	else
+		echo -e "$red""O ip "$yellow""$ip""$red" ainda nao esta cadastrado"
+	fi
+else
+	echo -e "$yellow""Nao existem ips a serem removidos!""$limpa"
+	sleep 1
+	
+fi
+	
+}
+case "$1" in
+add)
+read -p "Qual palavra voce quer bloquear? " word
+cad_word
+
+;;
+remove)
+read -p "Qual palavra voce deseja remover? " word
+del_word
+
+;;
+
+lock)
+if [ -s "$SOURCE/libs/allow" ]
+then 
+	for a in `cat "$SOURCE"/libs/allow`
+	do
+		for i in `cat "$SOURCE"/libs/blacklist`
+		do
+			
+			echo "ALERTA SSL 443 --> Liberacao de $i para $a"	
+			iptables -I INPUT -s "$a" -m string --algo bm --string "$i" -p tcp --dport 443 -j ACCEPT
+			iptables -I FORWARD -s "$a" -m string --algo bm --string "$i" -p tcp --dport 443 -j ACCEPT
+		done
+	done
+fi
+for i in `cat "$SOURCE"/libs/blacklist`
 do
-clear
-tput bold
-echo -ne "					GESTÃO DE FIREWALL
-					----------------
-			"$yblu"Opção           Descrição                           
-			=====           =========                           
-			(1)             Cadastrar DNAT com DDNS.             
-			(2)             Cadastrar DNAT.                   
-			(3)             Bloquear site.     
-			(4)             Listar Regras.
-			(5)             Resetar Regras.                 
-			(6)             Aplicar Mudancas.            
-			(x)             Voltar ao Menu Principal.           "$limpa"
-
-"
-echo -ne "				Escolha uma Opção: { }\033[2D"
-read -n 1 opcao
-echo -e "\n"
-case "$opcao"
-in
-
-#######################################
-#Cadastrar DNAT com DDNS.
-#######################################
-1)
-while true
-	do
-clear
-tput bold
-echo -ne "				CADASTRAR DNAT COM DDNS
-				---------------------------
-			"$yblu"Opção           Descrição                          
-			=====           =========                          
-			(1)             Adcionar/Remover regra. 
-			(2)             Listar regras cadastradas.
-			(x)             Voltar ao Menu Principal.          "$limpa"
-
-"
-
-echo -ne "				Escolha uma Opção: { }\033[2D"
-read -n 1 opcao1
-echo -e "\n"
-case "$opcao1"
-in
-	1)
-	read -p "Qual o endereco ddns ? (ex:. empresa.ddns.net) " ddnsalow
-	if [ ! "$ddnsalow" ]
-	then
-		echo -e "\033[1;31;40mOps... A entrada nao pode ser um valor vazio!\033[0m"
-		sleep 2
-	else
-		if [ -f "$ASITIO" ]
-		then
-			if fgrep -o "$salow" "$ASITIO" 2>/dev/null 1>/dev/null
-			then
-				read -p "O endereco "$salow" ja esta cadastrado. Vc deseja remover? (s|N): " ask
-				if [[ "$ask" == s || "$ask" == S ]]
-				then
-					"$SUD" fgrep -v "$salow" "$ASITIO" >> /tmp/tsalow
-					"$SUD" mv /tmp/tsalow "$ASITIO"
-					echo -e "\033[1;32;40m"$salow" foi removido com exito!\033[0m"
-					sleep 1
-				else
-					continue
-				fi
-			else
-				"$SUD" echo "$salow" >> "$ASITIO"
-				echo -e "\033[1;32;40m"$salow" foi adcionado com exito!\033[0m"
-				sleep 1
-			fi
-		else
-			echo -e "\033[31;40m"$ASITIO" nao existe ou nao esta configurado corretamente.\033[0m"
-			echo -e "\033[31;40mVerifique a variavel global de "$0" ou escolha a opcao \"9\" para configurar.\033[0m"
-			sleep 5
-		fi
-	fi
-	;;	
-	2)
-	"$BPTH"ltn "$ASITIO"
-	;;
-	x|X)
-	break
-	;;
-	*)
-	echo -e "\033[31;40mOps... Só uma das opcoes acima podem ser usadas...\033[0m"
-	sleep 2
-	;;
-esac
+	echo "ALERTA SSL 443 --> Droping $i"	
+	iptables -A INPUT -m string --algo bm --string "$i" -p tcp --dport 443 -j DROP
+	iptables -A FORWARD -m string --algo bm --string "$i" -p tcp --dport 443 -j DROP
 done
-clear
 ;;
-#######################################
-#Bloquear Sites.
-#######################################
-2)
-while true
-	do
-clear
-tput bold
-echo -ne "					BLOQUEAR SITES
-					--------------
-			"$yblu"Opção           Descrição                           
-			=====           =========                           
-			(1)             Adcionar/Remover Bloqueios de Sites.
-			(2)             Listar Sites Bloqueados no cadastro.
-			(x)             Voltar ao Menu Principal.           "$limpa"
-
-"
-
-echo -ne "				Escolha uma Opção: { }\033[2D"
-read -n 1 opcao2
-echo -e "\n"
-case "$opcao2"
-in
-	1)
-	read -p "Qual o endereco do site a ser Bloqueado ? " sdeny
-	if [ ! "$sdeny" ]
-	then
-		echo -e "\033[1;31;40mOps... A entrada nao pode ser um valor vazio!\033[0m"
-		sleep 2
-	else
-		if [ -f "$DSITIO" ]
-		then
-			if fgrep -o "$sdeny" "$DSITIO" 2>/dev/null 1>/dev/null
-			then
-				read -p "O endereco "$sdeny" ja esta cadastrado. Vc deseja remover? (s|N): " ask1
-				if [[ "$ask1" == s || "$ask1" == S ]]
-				then
-					"$SUD" fgrep -v "$sdeny" "$DSITIO" >> /tmp/tsdeny
-					"$SUD" mv "/tmp/tsdeny" "$DSITIO"
-					echo -e "\033[1;32;40m"$sdeny" foi removido com exito!\033[0m"
-					sleep 1
-				else
-					continue
-				fi
-			else
-				"$SUD" echo "$sdeny" >> "$DSITIO"
-				echo -e "\033[1;32;40m"$sdeny" foi adcionado com exito!\033[0m"
-				sleep 1
-			fi
-		else
-			echo -e "\033[31;40m"$DSITIO" nao existe ou nao esta configurado corretamente.\033[0m"
-			echo -e "\033[31;40mVerifique a variavel global de "$0" ou escolha a opcao \"9\" para configurar.\033[0m"
-			sleep 5
-		fi
-	fi
-	;;	
-	2)
-	"$BPTH"ltn "$DSITIO"
-	;;
-	x|X)
-	break
-	;;
-	*)
-	echo -e "\033[31;40mOps... Só uma das opcoes acima podem ser usadas...\033[0m"
-	sleep 2
-	;;
-esac
-done
-clear
-;;
-#######################################
-#Bloquear Palavras.
-#######################################
-3)
-echo -e "\033[1;32;40mEsse Firewall esta configurado com WhiteList e BlackList. Nao ha conteudo por palavras...\033[0m"
-sleep 3
-#while true
+#for i in `cat "$SOURCE"/libs/blacklist`
 #do
-#clear
-#tput bold
-#echo -ne "				BLOQUEAR CONTEUDO POR PALAVRAS
-#				-------------------------------
-#			"$yblu"Opção           Descrição                         
-#			=====           =========                         
-#			(1)             Adcionar/Remover Palavras negadas.
-#			(2)             Listar Palavras cadastradas.      
-#			(x)             Voltar ao Menu Principal.         "$limpa"
-#
-#"
-#echo -ne "				Escolha uma Opção: { }\033[2D"
-#read -n 1 opcao3
-#echo -e "\n"
-#case "$opcao3"
-#in
-#	1)
-#	read -p "Digite a palavra que vc deseja bloquear ? " dword
-#	if [ ! "$dword" ]
-#	then
-#		echo -e "\033[1;31;40mOps... A entrada nao pode ser um valor vazio!\033[0m"
-#		sleep 2
-#	else
-#		if [ -f "$DWORD" ]
-#		then
-#			if fgrep -o "$dword" "$DWORD" 2>/dev/null 1>/dev/null
-#			then
-#				read -p "A palavra "$dword" ja esta cadastrada. Vc deseja remover? (s|N): " ask3
-#				if [[ "$ask3" == s || "$ask3" == S ]]
-#				then
-#					"$SUD" fgrep -v "$dword" "$DWORD" >> /tmp/tdword
-#					"$SUD" mv "/tmp/tdword" "$DWORD"
-#					echo -e "\033[1;32;40m"$dword" foi removido com exito!\033[0m"
-#					sleep 1
-#				else
-#					continue
-#				fi
-#			else
-#				"$SUD" echo "$dword" >> "$DWORD"
-#				echo -e "\033[1;32;40m"$dword" foi adcionado com exito!\033[0m"
-#				sleep 1
-#			fi
-#		else
-#			echo -e "\033[31;40m"$DWORD" nao existe ou nao esta configurado corretamente.\033[0m"
-#			echo -e "\033[31;40mVerifique a variavel global de "$0" ou escolha a opcao \"9\" para configurar.\033[0m"
-#			sleep 5
-#		fi
-#	fi
-#	;;	
-#	2)
-#	"$BPTH"ltn "$DWORD"
-#	;;
-#	x|X)
-#	break
-#	;;
-#	*)
-#	echo -e "\033[31;40mOps... Só uma das opcoes acima podem ser usadas...\033[0m"
-#	sleep 2
-#	;;
-#esac
+#	iptables -A INPUT -m string --algo bm --string "$i" -j DROP
+#	iptables -A FORWARD -m string --algo bm --string "$i" -j DROP
 #done
-clear
-;;
-#######################################
-#Cadastrar IP e Nomes para Relatorio.
-#######################################
-4)
-"$SUD" chmod 666 "$USARG"
-while true
-	do
-clear
-tput bold
-echo -ne "				CADASTRO DE USUARIOS E IP's
-				---------------------------
-			"$yblu"Opção           Descrição                      
-			=====           =========                      
-			(1)             Adcionar/Remover IP's e Nomes. 
-			(2)             Listar Arquivo de Relatorio.   
-			(x)             Voltar ao Menu Principal.      "$limpa"
+#;;
 
-"
-echo -ne "				Escolha uma Opção: { }\033[2D"
-read -n 1 opcao4
-echo -e "\n"
-case "$opcao4"
-in
-	1)
-	read -p "Qual o nome do Usuario ? " suser
-	read -p "Digite o Endereco IP deste usuario: " sip
-	if [[ ! "$suser" || ! "$sip" ]]
-	then
-		echo -e "\033[1;31;40mOps... A entrada nao pode ser um valor vazio!\033[0m"
-		sleep 2
-	else
-		if fgrep "$suser" "$USARG" 2>/dev/null 1>/dev/null
-		then
-			fgrep "$suser" "$USARG"	
-			read -p ""$suser" Ja esta cadastrado. Deseja Remover? (s|N): " ask4
-			if [ "$ask4" = s -o "(" "$ask4" = S ")" ]
-			then 	
-				"$SUD" fgrep -v "$suser" "$USARG" >> /tmp/tusarg
-				"$SUD" mv /tmp/tusarg "$USARG"
-				echo -e "\033[1;32;40m"$suser" foi removido com exito!\033[0m"
-				sleep 1
-			else
-				continue
-			fi
-		elif fgrep "$sip" "$USARG" 2>/dev/null 1>/dev/null
-		then
-			fgrep "$sip" "$USARG"	
-			read -p ""$sip" Ja esta cadastrado. Deseja Remover? (s|N): " ask5
-			if [ "$ask5" = s -o "(" "$ask5" = S ")" ]
-			then 	
-				"$SUD" fgrep -v "$sip" "$USARG" >> /tmp/tusarg
-				"$SUD" mv /tmp/tusarg "$USARG"
-				echo -e "\033[1;32;40m"$sip" foi removido com exito!\033[0m"
-				sleep 1
-			else
-				continue
-			fi
-		else
-			"$SUD" echo ""$sip"	"$suser"" >> "$USARG"
-			echo -e "\033[1;32;40m"$suser" foi cadastrado com exito!\033[0m"
-			sleep 1
-		fi
-		
-	fi	
-	;;	
-	2)
-	"$BPTH"ltn "$USARG"
-	;;
-	x|X)
-	break
-	;;
-	*)
-	echo -e "\033[31;40mOps... Só uma das opcoes acima podem ser usadas...\033[0m"
-	sleep 2
-	;;
-esac
-done
-clear
-;;
-#######################################
-#Liberar Acesso Para o MSN Por IP.
-#######################################
-5)
-while true
-	do
-clear
-tput bold
-echo -ne "				CADASTRO DE ACESSO AO MSN
-				---------------------------
-			"$yblu"Opção           Descrição                
-			=====           =========                
-			(1)             Adcionar/Remover IP's.   
-			(2)             Listar Ip's Liberados.   
-			(x)             Voltar ao Menu Principal."$limpa"
+addip)
+read -p "Qual ip voce quer liberar? " ip
+cad_ip
 
-"
-echo -ne "				Escolha uma Opção: { }\033[2D"
-read -n 1 opcao5
-echo -e "\n"
-case "$opcao5"
-in
-	1)
-	read -p "Digite o Endereco IP: " sip
-	if [ ! "$sip" ]
-	then
-		echo -e "\033[1;31;40mOps... A entrada nao pode ser um valor vazio!\033[0m"
-		sleep 2
-	else
-		if fgrep "$sip" "$APRIV" 2>/dev/null 1>/dev/null
-		then
-			fgrep "$sip" "$APRIV"	
-			read -p ""$sip" Ja esta cadastrado. Deseja Remover? (s|N): " ask5
-			if [ "$ask5" = s -o "(" "$ask5" = S ")" ]
-			then 	
-				"$SUD" fgrep -v "$sip" "$APRIV" >> /tmp/tapriv
-				"$SUD" mv /tmp/tapriv "$APRIV"
-				echo -e "\033[1;32;40m"$sip" foi removido com exito!\033[0m"
-				sleep 1
-			else
-				continue
-			fi
-		else
-			"$SUD" echo "$sip" >> "$APRIV"
-			echo -e "\033[1;32;40m"$sip" adcionado com sucesso!\033[0m"
-			sleep 1
-		fi
-		continue
-	fi	
-	;;	
-	2)
-	"$BPTH"ltn "$APRIV"
-	;;
-	x|X)
-	break
-	;;
-	*)
-	echo -e "\033[31;40mOps... Só uma das opcoes acima podem ser usadas...\033[0m"
-	sleep 2
-	;;
-esac
-done
-clear
 ;;
-#######################################
-#Liberar Acesso Irrestrito.
-#######################################
-6)
+
+removeip)
+read -p "Qual ip voce deseja remover? " ip
+del_ip
+
+;;
+
+clean)
+echo -e "$green""Limpando Regras do firewall...""$limpa"
+iptables -X
+iptables -F
+echo -e "$yellow""Firewall desabilitado""$limpa"
+;;
+list)
+cat "$SOURCE"/libs/blacklist|less
+;;
+listip)
+cat "$SOURCE"/libs/allow|less
+;;
+
+reset)
+sudo /etc/rc.d/rc.fir
+;;
+
+menu)
 while true
 do
-clear
-tput bold
-echo -ne "				ACESSO IRRESTRITO 
-				------------------
-			"$yblu"Opção           Descrição                 
-			=====           =========                 
-			(1)             Adcionar/Remover IP's.    
-			(2)             Listar Ip's Irrestritos.  
-			(x)             Voltar ao Menu Principal. "$limpa"
+	clear
+	echo -e "$green""
+			 ####################################
+			 # (1) Bloquear palavras            #
+			 # (2) Desbloquear palavras         #
+                         # (3) Listar palavras cadastradas  #
+                         # (4) Liberar endereco IP	    #
+                         # (5) Remover endereco IP 	    #
+                         # (6) Listar enderecos	IP 	    #
+                         # (7) Aplicar Regras		    #
+			 # (x) sair                         #
+			 ####################################
+""$limpa"
+	read -p "Digite sua opcao: " res
+if [ "$res" = 0 ]
+then
+	echo -e "$red""Voce deve escolher uma opcao do menu!""$limpa"
+	clear
+fi
+
+if [ "$res" = 1 ]
+then
+	"$0" add
+	sleep 1
+	clear
+fi
+
+if [ "$res" = 2 ]
+then
+	"$0" remove
+	sleep 1
+	clear
+fi
+
+if [ "$res" = 3 ]
+then
+	"$0" list
+	clear
+fi
+
+if [ "$res" = 4 ]
+then
+	"$0" addip
+	clear
+fi
+if [ "$res" = 5 ]
+then
+	"$0" removeip
+	clear
+fi
+
+if [ "$res" = 6 ]
+then
+	"$0" listip
+	clear
+fi
+
+if [ "$res" = 7 ]
+then
+		
+	"$0" reset
+	clear
+fi
+
+if [ "$res" = x -o "$res" = X ]
+then
+	break
+fi
+ 
+done
+;;
+*)
+echo -e "$yellow""Use "$0":."$limpa"
+		
+		"$green"add"$limpa"	Adcionar palavras na lista negra
+		"$green"addip"$limpa"	Adcionar ips  na lista branca
+		"$green"remove"$limpa"	Remover palavras da lista negra
+		"$green"removeip"$limpa"Remover ips da lista branca
+		"$green"list"$limpa"	Listar palavras na lista negra
+		"$green"listip"$limpa"	Listar ips na lista branca
+		"$green"clean"$limpa"	Zerar todas as regras do firewall
+		"$green"lock"$limpa"	Refazer todos os bloqueios da lista
+		"$green"reset"$limpa"	Roda novamente o script local do firewall
+		"$green"menu"$limpa"	Menu interativo para adcionar ou remover palavras
 
 "
-echo -ne "				Escolha uma Opção: { }\033[2D"
-read -n 1 opcao6
-echo -e "\n"
-case "$opcao6"
-in
-	1)
-	read -p "Digite o Endereco IP: " sip
-	if [ ! "$sip" ]
-	then
-		echo -e "\033[1;31;40mOps... A entrada nao pode ser um valor vazio!\033[0m"
-		sleep 2
-	else
-		if fgrep "$sip" "$AFULL" 2>/dev/null 1>/dev/null
-		then
-			fgrep "$sip" "$AFULL"	
-			read -p ""$sip" Ja esta cadastrado. Deseja Remover? (s|N): " ask6
-			if [ "$ask6" = s -o "(" "$ask6" = S ")" ]
-			then 	
-				"$SUD" fgrep -v "$sip" "$AFULL" >> /tmp/tafull
-				"$SUD" mv /tmp/tafull "$AFULL"
-				echo -e "\033[1;32;40m"$sip" foi removido com exito!\033[0m"
-				sleep 1
-			else
-				continue
-			fi
-		else
-			"$SUD" echo "$sip" >> "$AFULL"
-			echo -e "\033[1;32;40m"$sip" adcionado com sucesso!\033[0m"
-			sleep 1
-		fi
-		continue
-	fi	
-	;;	
-	2)
-	"$BPTH"ltn "$AFULL"
-	;;
-	x|X)
-	break
-	;;
-	*)
-	echo -e "\033[31;40mOps... Só uma das opcoes acima podem ser usadas...\033[0m"
-	sleep 2
-	;;
-esac
-done
-clear
 ;;
-#######################################
-#Gerar Relatorio do Sarg.
-#######################################
-7)
-"$SUD" "$SARGER" 
-sleep 2
-;;
-#######################################
-#Aplicar Configuracoes Agora.
-#######################################
-8)
-"$SUD" chown -R "$UPX"."$UPX" "$PTXCONF"*
-su squid -c "$SQUID -k reconfigure"
-echo -e "\033[1;32;40mAs modificacoes foram aplicadas com sucesso!\033[0m"
-sleep 2
-;;
-#######################################
-x|X)
-"$SUD" chown -R "$UPX"."$UPX" "$PTXCONF"*
-break
-;;
-#######################################
 
-######################################
-*)
-echo -e "\033[31;40mOps... Só uma das opcoes acima podem ser usadas...\033[0m"
-sleep 2
-;;
 esac
-done
-clear
-exit
+exit 0
